@@ -1,0 +1,17 @@
+{% if mimetype == "text" %}
+  {{content}}
+{% elif mimetype == "image" %}
+  <img class="img-fluid" src="{{content}}" />
+{% elif mimetype == "audio" %}
+  <audio id="sample" controls readall>
+    <source id="sample_src" src="{{content}}">
+    Your browser does not support the <code>audio</code> element.
+  </audio>
+{% elif mimetype == "video" %}
+  <video controls readall>
+    <source id="sample_src" src="{{content}}">
+    Your browser does not support the <code>video</code> element.
+  </video>
+{% else %}
+  {{content}}
+{% endif %}

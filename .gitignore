@@ -1,0 +1,12 @@
+# Python
+*.pyc
+python3.lnk
+__pycache__/
+*.egg-info/
+
+# IDEs
+.vscode/
+
+# Local configuration
+.dir-locals.el
+.envrc

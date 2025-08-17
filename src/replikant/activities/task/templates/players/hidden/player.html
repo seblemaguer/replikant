@@ -1,0 +1,21 @@
+{% if mimetype == "text" %}
+  {{content}}
+{% elif mimetype.startswith("image") %}
+  <img class="img-fluid" src="{{content}}" />
+{% elif mimetype.startswith("audio") %}
+  <audio id="sample" readall>
+    <source id="sample_src" src="{{content}}">
+    Your browser does not support the <code>audio</code> element.
+  </audio>
+{% elif mimetype == "video" %}
+  <video controls readall>
+    <source id="sample_src" src="{{content}}">
+    Your browser does not support the <code>video</code> element.
+  </video>
+{% else %}
+  {{content}}
+{% endif %}
+</label>
+
+<button type="button" class="btn btn-primary" id="playButton" onclick="playAudio()" style="margin: 5px;">Play</button>
+<button type="button" class="btn btn-primary" id="pauseButton" onclick="pauseAudio()" style="margin: 5px;" disabled>Pause</button>
