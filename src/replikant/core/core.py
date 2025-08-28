@@ -85,7 +85,7 @@ class Campaign:
         self._load_activities()
 
         # Register the providers some important information
-        provider_factory.get(TemplateProvider.NAME).register_instance()  # type: ignore
+        provider_factory.get(TemplateProvider.NAME).register_recipe()  # type: ignore
         if isinstance(ParticipantScope.get_auth_provider(), VirtualAuthProvider):
             ParticipantScope.set_auth_provider(AnonAuthProvider)
 
