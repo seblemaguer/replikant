@@ -6,21 +6,26 @@ requires = [
 
 [project]
 name = "replikant"
-version = "0.1"
+version = "0.0.1"
 description = "A flexible toolkit to enable replicable subjective evaluations"
 readme = {file="README.md", content-type = "text/markdown"}
 authors = [
    {name="Sébastien Le Maguer", email="sebastien.lemaguer@helsinki.fi"}
 ]
+maintainers = [
+   {name="Sébastien Le Maguer", email="sebastien.lemaguer@helsinki.fi"}
+]
+keywords = ["subjective evaluation", "survey", "flexible", "replicability", "flask", "jinj2"]
 requires-python = ">=3.11"
+license = "EUPL-1.2"
 classifiers = [
   'Development Status :: 4 - Beta', # Audience
   'Intended Audience :: Science/Research', # Topics
-  'License :: OSI Approved :: MIT License',
   "Programming Language :: Python :: 3 :: Only",
   'Programming Language :: Python :: 3.11',
-  "Programming Language :: Python :: 3.12",
-  'Topic :: Multimedia :: Sound/Audio :: Speech', # Pick your license as you wish
+  'Programming Language :: Python :: 3.12',
+  "Environment :: Web Environment",
+  "Framework :: Flask",
 ]
 dependencies = [
   "cachelib>=0.7",
