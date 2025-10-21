@@ -1,8 +1,5 @@
 # Replikant
 
-<p align="center">
-**The toolkit is useable, but still requires a bit of cleaning.** This is will be the priority after Interspeech, SSW & Blizzard.
-</p>
 
 Replikant is a python toolkit which aims to enable researcher to develop their own subjective evaluation recipes.
 It relies on Flask, Jinja2 and SQLite, and is a refactoring of FlexEval.
@@ -14,13 +11,17 @@ I am currently doing some final important cleaning part which I thought would be
 
 Replikant has been tested on python 3.11.
 
-To install simply run the following command:
+To install the current stable version, run the following command:
+
+```sh
+pip install replikant
+```
+
+To install the current unstable version, run the following command:
 
 ```sh
 pip install git+https://github.com/seblemaguer/replikant.git
 ```
-
-When the toolkit will be fully cleaned, it will be submitted to pypi.
 
 ## Developping and running a recipe
 
