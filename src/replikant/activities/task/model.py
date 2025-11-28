@@ -41,6 +41,7 @@ class TaskModel(Model):
     sample_id = db.Column(db.Integer, ForeignKey(Sample.__tablename__ + ".id"), nullable=False)
     info_type = db.Column(db.String, nullable=False)
     info_value = db.Column(db.String, nullable=False)
+    operation_type = db.Column(db.String, nullable=False)
 
     def __init__(self, *args, **kwargs):
         self.intro = False

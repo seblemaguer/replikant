@@ -111,14 +111,13 @@ with campaign_instance.register_activity(__name__) as scope:
             # Update information related to the steps
             if is_intro_step:
                 max_steps = nb_intro_steps
-                cur_step += 1
             else:
                 max_steps = max_steps - nb_intro_steps
-                cur_step = cur_step + 1 - nb_intro_steps
+                cur_step = cur_step - nb_intro_steps
 
             parameters = {
                 "max_steps": max_steps,
-                "step": cur_step,
+                "step": cur_step + 1,
                 "intro_step": is_intro_step,
                 "list_samples": _get_samples,
             }
@@ -231,10 +230,11 @@ with campaign_instance.register_activity(__name__) as scope:
                             _ = task.model.create(
                                 user_id=user.id,
                                 intro=intro_step,
-                                step_idx=cur_step + 1,
+                                step_idx=cur_step,
                                 sample_id=sample_id,
                                 info_type=name_col,
                                 info_value=value,
+                                operation_type="record",
                                 commit=False,
                             )
 
@@ -329,6 +329,7 @@ with campaign_instance.register_activity(__name__) as scope:
                 sample_id=sample_id,
                 info_type=info_type,
                 info_value=info_value,
+                operation_type="monitor",
                 commit=False,
             )
         except Exception as e:

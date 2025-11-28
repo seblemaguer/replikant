@@ -412,8 +412,9 @@ class Task(TransactionalObject):
         """
         all_steps = set()
         for record in getattr(user, self.model.__name__):
-            all_steps.add(record.step_idx)
-        return max(all_steps) if all_steps else 0
+            if record.operation_type == "record":
+                all_steps.add(record.step_idx)
+        return max(all_steps) + 1 if all_steps else 0
 
     def get_step(
         self, id_step: int, user: User, nb_systems: int, is_intro_step: bool = False
