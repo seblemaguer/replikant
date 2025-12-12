@@ -18,8 +18,18 @@
         <div class="card" style="margin-bottom:20px;">
             <div class="card-body">
                 <h5 class="card-title">SQLite</h5>
-                <p class="card-text">Download the sqlite database</p>
+                <p class="card-text">Download the raw sqlite database</p>
                 <a href="replikant.db" class="btn btn-primary">Download</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6">
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-body">
+                <h5 class="card-title">SQL script</h5>
+                <p class="card-text">Download the SQL script file (db creation + filling)</p>
+                <a href="replikant.sql" class="btn btn-primary">Download</a>
             </div>
         </div>
     </div>

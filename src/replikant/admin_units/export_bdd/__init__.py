@@ -11,7 +11,7 @@ from flask import current_app, send_file
 
 from replikant.core import campaign_instance
 from replikant.utils import safe_make_dir
-from replikant.database import extract_dataframes
+from replikant.database import export_schema, extract_dataframes
 
 with campaign_instance.register_admin_unit(__name__) as am:
     safe_make_dir(current_app.config["REPLIKANT_RECIPE_TMP_DIR"] + "/export_bdd/")
@@ -60,3 +60,24 @@ with campaign_instance.register_admin_unit(__name__) as am:
         shutil.rmtree(f"{current_app.config['REPLIKANT_RECIPE_TMP_DIR']}/{root_base_file}.bdd")
 
         return send_file(f"{current_app.config['REPLIKANT_RECIPE_TMP_DIR']}/replikant.zip")
+
+    @am.route("/replikant.sql")
+    @am.valid_connection_required
+    def sql():
+
+        # Prepare output
+        sql_filename = f"{current_app.config['REPLIKANT_RECIPE_TMP_DIR']}/replikant.sql"
+
+        # Retrieve the exported schema
+        ddl_statements, dml_statements = export_schema()
+
+        # Export now
+        with open(sql_filename, "w", encoding="utf-8") as f:
+            f.write("-- DDL (Schema)\n\n")
+            for ddl in ddl_statements:
+                f.write(ddl + "\n")
+            f.write("-- DML (Data)\n\n")
+            for dml in dml_statements:
+                f.write(dml + "\n")
+
+        return send_file(sql_filename)

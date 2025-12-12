@@ -11,7 +11,9 @@ https://github.com/cookiecutter-flask/cookiecutter-flask/blob/master/%7B%7Bcooki
 
 from typing import Self
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import MetaData
 from sqlalchemy import text
+from sqlalchemy.schema import CreateTable
 from sqlalchemy.inspection import inspect
 from sqlalchemy.ext.declarative import declared_attr
 import pandas as pd
@@ -300,3 +302,33 @@ def extract_dataframes(names: list[str] | None = []) -> dict[str, pd.DataFrame]:
         dict_res[name_table] = df
 
     return dict_res
+
+
+def export_schema() -> tuple[list[str], list[str]]:
+    """Generate the SQL script to recreate and refill the database
+
+    Returns
+    -------
+    str
+        the content of the SQL script
+    """
+    metadata = MetaData()
+    metadata.reflect(bind=db.engine)
+
+    ddl_statements = []
+    for table in metadata.sorted_tables:
+        ddl = str(CreateTable(table).compile(bind=db.engine))
+        ddl_statements.append(ddl + ";")
+
+    dml_statements = []
+    with db.engine.connect() as conn:
+        for table in metadata.sorted_tables:
+            result = conn.execute(table.select()).mappings().all()
+            for row in result:
+                values = {col.name: row[col.name] for col in table.columns}
+                insert_sql = (
+                    table.insert().values(**values).compile(bind=db.engine, compile_kwargs={"literal_binds": True})
+                )
+                dml_statements.append(str(insert_sql) + ";")
+
+    return ddl_statements, dml_statements
