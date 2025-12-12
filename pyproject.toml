@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "replikant"
-version = "0.0.3"
+version = "0.0.4-dev"
 description = "A flexible toolkit to enable replicable subjective evaluations"
 readme = {file="README.md", content-type = "text/markdown"}
 authors = [
