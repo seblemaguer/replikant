@@ -179,7 +179,6 @@ with campaign_instance.register_activity(__name__) as scope:
         # Save
         all_records = task.get_all_records(user)
         for _, all_field_names in all_records.items():
-
             try:
                 # Save responses from the user
                 for field_type, field_list in [
@@ -187,7 +186,7 @@ with campaign_instance.register_activity(__name__) as scope:
                     ("file", request.files),
                 ]:
                     for field_key in field_list.keys():
-                        if field_key in all_field_names:
+                        if (field_key[:5] == "save:") and (field_key in all_field_names):
                             # Several values can be returned for one key (MultiDict)
                             #    -> use d.get_list(key) instead d[key]
                             if len(field_list.getlist(field_key)) > 1:
@@ -196,17 +195,13 @@ with campaign_instance.register_activity(__name__) as scope:
                                 field_value = field_list[field_key]
 
                             # Get the name of the info to save
-                            if field_key[:5] == "save:":
-                                field_key = field_key[5:]
-                                (
-                                    _,
-                                    field_name,
-                                    obfuscated_sample,
-                                ) = field_key.split(TransactionalObject.RECORD_SEP)
-                                name_col = field_name
-                            else:
-                                name_col = field_key
-                                raise Exception("For now this is not supported")
+                            field_key = field_key[5:]
+                            (
+                                _,
+                                field_name,
+                                obfuscated_sample,
+                            ) = field_key.split(TransactionalObject.RECORD_SEP)
+                            name_col = field_name
 
                             # Extract the sample information
                             system, syssample_id = task.get_in_transaction(user, obfuscated_sample)
@@ -237,11 +232,37 @@ with campaign_instance.register_activity(__name__) as scope:
                                 operation_type="record",
                                 commit=False,
                             )
+                        elif field_key[:5] != "save:":
+                            name_col = field_key
+                            value = field_list[field_key]
+                            # Extract the sample information
+                            info = task.get_in_transaction(user, value)
+                            if info is None:
+                                raise Exception(
+                                    "If the field name is not generated to be part of the transaction, "
+                                    + "it means the value should contain the obfusted sample: "
+                                    + f"field_name={name_col}, field_value={value}"
+                                )
+                            system, syssample_id = info
+                            sample_id = int(syssample_id)
+
+                            scope.logger.info(f"([sample={sample_id}, system={system}] - {name_col}: True)")
+                            _ = task.model.create(
+                                user_id=user.id,
+                                intro=intro_step,
+                                step_idx=cur_step,
+                                sample_id=sample_id,
+                                info_type=name_col,
+                                info_value=True,
+                                operation_type="record",
+                                commit=False,
+                            )
+                        else:
+                            raise Exception(f"The field structure is not support: {field_key}")
 
             except Exception as e:
-                raise (e)
                 task.delete_transaction(user)
-                return redirect(scope.url_for(scope.get_endpoint_for_local_rule("/")))
+                raise e
 
         # Commit the results and clean the transations of the user
         commit_all()
