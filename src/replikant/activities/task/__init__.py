@@ -12,6 +12,9 @@ from replikant.database import commit_all
 # Current package
 from .src import task_manager, TransactionalObject
 
+SAVING_FIELD_PREFIX = "save"
+SAMPLE_ID_PREFIX = "sampleid"
+
 
 class TaskAlternateError(Exception):
     pass
@@ -93,10 +96,24 @@ with campaign_instance.register_activity(__name__) as scope:
                 record = task.get_record(user, record_name)
 
                 # ID of the field
-                ID = TransactionalObject.RECORD_SEP.join(["save", record, basename, str(sample.ID)])
+                ID = TransactionalObject.RECORD_SEP.join([SAVING_FIELD_PREFIX, record, basename, str(sample.ID)])
 
                 # Associate field to record
                 _ = task.add_field_to_record(user, ID, record_name)
+
+                return ID
+
+            def _generate_field_value(sample: SampleModelInTransaction):
+
+                # Make sure the record exist and get a real name if record name is None
+                user = scope.auth_provider.user
+                record = task.get_record(user, None)
+
+                # ID of the field
+                ID = TransactionalObject.RECORD_SEP.join([record, str(sample.ID)])
+
+                # Associate field to record
+                _ = task.add_field_to_record(user, ID, None)
 
                 return ID
 
@@ -123,6 +140,7 @@ with campaign_instance.register_activity(__name__) as scope:
             }
             filters = {
                 "generate_field_name": _generate_field_name,
+                "generate_field_value": _generate_field_value,
                 "prepare_new_record": _prepare_new_record,
             }
 
@@ -186,7 +204,9 @@ with campaign_instance.register_activity(__name__) as scope:
                     ("file", request.files),
                 ]:
                     for field_key in field_list.keys():
-                        if (field_key[:5] == "save:") and (field_key in all_field_names):
+                        if (field_key.startswith(SAVING_FIELD_PREFIX + TransactionalObject.RECORD_SEP)) and (
+                            field_key in all_field_names
+                        ):
                             # Several values can be returned for one key (MultiDict)
                             #    -> use d.get_list(key) instead d[key]
                             if len(field_list.getlist(field_key)) > 1:
@@ -195,7 +215,7 @@ with campaign_instance.register_activity(__name__) as scope:
                                 field_value = field_list[field_key]
 
                             # Get the name of the info to save
-                            field_key = field_key[5:]
+                            field_key = field_key.replace(SAVING_FIELD_PREFIX + TransactionalObject.RECORD_SEP, "")
                             (
                                 _,
                                 field_name,
@@ -232,9 +252,10 @@ with campaign_instance.register_activity(__name__) as scope:
                                 operation_type="record",
                                 commit=False,
                             )
-                        elif field_key[:5] != "save:":
+                        elif not field_key.startswith(SAVING_FIELD_PREFIX + TransactionalObject.RECORD_SEP):
                             name_col = field_key
-                            value = field_list[field_key]
+                            (_, value) = field_list[field_key].split(TransactionalObject.RECORD_SEP)
+
                             # Extract the sample information
                             info = task.get_in_transaction(user, value)
                             if info is None:
@@ -324,15 +345,21 @@ with campaign_instance.register_activity(__name__) as scope:
             info_value = monitoring_info.get("info_value")
 
             # TODO: should be generalised
-            if isinstance(info_value, str) and info_value.startswith("sampleid:"):
-                _, syssample_id = task.get_in_transaction(user, info_value.replace("sampleid:", ""))
+            if isinstance(info_value, str) and info_value.startswith(SAMPLE_ID_PREFIX + TransactionalObject.RECORD_SEP):
+                _, syssample_id = task.get_in_transaction(
+                    user, info_value.replace(SAMPLE_ID_PREFIX + TransactionalObject.RECORD_SEP, "")
+                )
                 info_value = int(syssample_id)
             elif isinstance(info_value, list):
                 values = []
                 for cur_value in info_value:
-                    if isinstance(cur_value, str) and cur_value.startswith("sampleid:"):
+                    if isinstance(cur_value, str) and cur_value.startswith(
+                        SAMPLE_ID_PREFIX + TransactionalObject.RECORD_SEP
+                    ):
                         scope.logger.debug(f"Monitoring current value[list]: {cur_value}")
-                        _, syssample_id = task.get_in_transaction(user, cur_value.replace("sampleid:", ""))
+                        _, syssample_id = task.get_in_transaction(
+                            user, cur_value.replace(SAMPLE_ID_PREFIX + TransactionalObject.RECORD_SEP, "")
+                        )
                         cur_value = int(syssample_id)
                     values.append(str(cur_value))
                 info_value = f"[{','.join(values)}]"
