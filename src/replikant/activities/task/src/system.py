@@ -97,11 +97,21 @@ class System:
 
 class SystemManager(metaclass=AppSingleton):
     def __init__(self):
-        self.register: dict[str, System] = {}
+        self._register: dict[str, System] = {}
 
     def insert(self, name: str, data: str, delimiter: str = ",", max_samples: int = -1):
-        self.register[name] = System(name, data, delimiter, max_samples)
-        return self.register[name]
+        if name in self._register:
+            raise Exception(
+                f'The system "{name}" is already part of the database, it means it is references in another section'
+            )
+        self._register[name] = System(name, data, delimiter, max_samples)
+        return self._register[name]
 
-    def get(self, name: str) -> System:
-        return self.register[name]
+    def __contains__(self, name: str) -> bool:
+        return name in self._register
+
+    def __getitem__(self, name: str) -> System:
+        return self._register[name]
+
+
+system_manager = SystemManager()

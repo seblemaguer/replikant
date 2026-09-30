@@ -24,7 +24,7 @@ from replikant.database import ModelFactory
 from replikant.activities.task.model import TaskModel
 
 # Current package
-from .system import Sample, SystemManager, System
+from .system import Sample, System, system_manager
 from .selection_strategy import SelectionBase, get_strategy
 
 
@@ -45,7 +45,7 @@ class SampleModelInTransaction:
             No idea
         """
         self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
-        self._system: System = SystemManager().get(sample.system)
+        self._system: System = system_manager[sample.system]
         self._sample = sample
         self.system_name = system_name
         self._ID = id
@@ -373,7 +373,7 @@ class Task(TransactionalObject):
             if "max_samples" in cur_system:
                 max_samples = int(cur_system["max_samples"])
 
-            self.systems[cur_system["name"]] = SystemManager().insert(
+            self.systems[cur_system["name"]] = system_manager.insert(
                 cur_system["name"], cur_system["data"], delimiter, max_samples
             )
 
