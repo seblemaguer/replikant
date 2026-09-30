@@ -26,7 +26,6 @@ class System:
 
         self.name = name
         source_file: str = current_app.config["REPLIKANT_RECIPE_DIR"] + "/systems/" + data
-
         try:
             reader = csv.DictReader(open(source_file, encoding="utf-8"), delimiter=delimiter)
         except Exception as e:

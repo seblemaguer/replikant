@@ -8,6 +8,12 @@ import argparse
 # Messaging/logging
 import logging
 from logging.config import dictConfig
+try:
+    import pythonjsonlogger
+    JSON_LOGGER = True
+except Exception:
+    JSON_LOGGER = False
+
 
 # Flask
 from flask import Flask
@@ -43,11 +49,11 @@ def configure_logger(args) -> logging.Logger:
     the logger: logger.Logger
     """
     # create logger and formatter
-    logger = logging.getLogger("root_replikant")
+    logger = logging.getLogger()
 
     # Verbose level => logging level
-    log_level: int = int(args.verbosity)
-    if log_level >= len(LEVEL):
+    log_level = args.verbosity
+    if args.verbosity >= len(LEVEL):
         log_level = len(LEVEL) - 1
         # logging.warning("verbosity level is too high, I'm gonna assume you're taking the highest (%d)" % log_level)
 
@@ -73,9 +79,18 @@ def configure_logger(args) -> logging.Logger:
 
     # Add file handler if file logging required
     if args.log_file is not None:
+        cur_formatter_key = "f"
+        if JSON_LOGGER and args.log_file.endswith(".json"):
+            logging_config["formatters"]["j"] = {
+                '()': 'pythonjsonlogger.json.JsonFormatter',
+                'fmt': '%(asctime)s %(levelname)s %(filename)s %(lineno)d %(message)s',
+                'rename_fields': {'asctime': 'time', 'levelname': 'level', 'lineno': 'line_number'}
+            }
+            cur_formatter_key = "j"
+
         logging_config["handlers"]["f"] = {
             "class": "logging.FileHandler",
-            "formatter": "f",
+            "formatter": cur_formatter_key,
             "level": LEVEL[log_level],
             "filename": args.log_file,
         }

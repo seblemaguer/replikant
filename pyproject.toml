@@ -59,6 +59,7 @@ test = [
 Homepage = "https://github.com/seblemaguer/replikant"
 Issues = "https://github.com/seblemaguer/replikant/issues"
 git = "https://github.com/seblemaguer/replikant.git"
+
 [project.scripts]
 replikant = "replikant.main:main"
 
